@@ -3,9 +3,9 @@ name: Deploy Pipeline with Metadata Actions
 on:
   push:
     branches:
-      - "release/*"
+      - "v*.*.*"
     tags:
-      - "v*"
+      - "v*.*.*"
 
 jobs:
   deploy-docker:
