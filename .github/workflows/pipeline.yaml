@@ -1,14 +1,14 @@
-name: Deploy Pipeline with Metadata Actions
+name: Deploy Pipeline with Metadata Actions for Releases
 
 on:
   push:
     branches:
-      - "v*.*.*"
+      - "*.*.*"
     tags:
       - "v*.*.*"
 
 jobs:
-  deploy-docker:
+  deploy-to-docker:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,14 +23,10 @@ jobs:
         with:
           # images: ghcr.io/thedatabaseme/hello-world
           images: viniciusfreitasrj17/pipeline-metadata-actions
-          # flavor: latest=true
+          flavor: latest=false
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
-
-      # - name: Build and tag docker image
-      #   run: |
-      #     docker build --tag=${{ steps.meta.outputs.labels }}:${{ steps.meta.outputs.tags }} .
 
       - name: Login to image repository
         if: github.ref_type == 'tag'
@@ -39,10 +35,6 @@ jobs:
           # registry: ghcr.io
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # - name: Push image to Docker Hub
-      #   run: |
-      #     docker push ${{ steps.meta.outputs.labels }}:${{ steps.meta.outputs.tags }}
 
       - name: Build and push
         uses: docker/build-push-action@v3
