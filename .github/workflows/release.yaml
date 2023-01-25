@@ -1,4 +1,4 @@
-name: Deploy Pipeline with Metadata Actions for Releases
+name: Deploy Pipeline with Metadata Actions for Release
 
 on:
   push:
