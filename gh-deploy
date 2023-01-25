@@ -8,6 +8,8 @@ pattern_prd="master|main"
 pattern_hml="staging|homolog|preview"
 prd_branch=$(git branch --remote | grep -E "*(${pattern_prd})$" | cut -d '/' -f 2 | wc -l)
 hml_branch=$(git branch --remote | grep -E "*(${pattern_hml})$" | cut -d '/' -f 2 | wc -l)
+current_branch=$(git branch --show-current)
+re="^[0-9]+\.[0-9]+\.[0-9]+$"
 
 ##############################################################################################
 ## Help
@@ -31,11 +33,9 @@ esac
 [[ $(type -P git) ]] || { echo -e "$error No have git instaled\n Run to install: '\033[32;1msudo apt install git -y\033[m'"; exit 1 ;}
 [[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '\033[32;1msudo apt install gh -y\033[m'"; exit 1 ;}
 [[ "$1" ]] || { echo -e "$error Type the release version"; exit 1 ;}
-current_branch=$(git branch --show-current)
 for i in "master" "main" "staging" "homolog" "develop"; do
 	[[ $current_branch = $i ]] && { echo -e "$error Branch current $current_branch not permission to create Release"; exit 1 ;}
 done
-re="^[0-9]+\.[0-9]+\.[0-9]+$"
 [[ "$1" =~ $re ]] || { echo -e "$error The release branch name should be in pattern 1.0.0"; exit 1 ;}
 for i in $(gh release list --exclude-drafts --exclude-pre-releases -L 100 | awk '{print $1}' | sed s/v//g); do 
 	[[ $i = $1 ]] && { echo -e "$error This release version already exists"; exit 1 ;}
@@ -43,14 +43,15 @@ done
 [[ "$2" ]] || { echo -e "$error Type the release description"; exit 1 ;}
 [[ "$prd_branch" = 1 ]] || { echo -e "$error I not know what's production branch, set in pattern_prd variable"; exit 1 ;}
 [[ "$hml_branch" = 1 ]] || { echo -e "$error I not know what's homologation branch, set in pattern_hml variable"; exit 1 ;}
-prd_branch=$(git branch --remote | grep -E "*(master|main)$" | cut -d '/' -f 2 | sed "s/ //g")
-hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
 ## Debug Validators 
 # echo -e "$ok pass validators ..."
 # exit 0
 
 ##############################################################################################
 ## Core
+prd_branch=$(git branch --remote | grep -E "*(master|main)$" | cut -d '/' -f 2 | sed "s/ //g")
+hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
+
 echo "Creating and Push Release Branch"
 sleep 2
 git checkout -b $1
