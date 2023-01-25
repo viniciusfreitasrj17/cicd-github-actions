@@ -1,8 +1,6 @@
 name: Deploy Pipeline with Metadata Actions for Homolog
 
 env:
-  IMAGE: viniciusfreitasrj17/pipeline-metadata-actions
-  TAG: staging
   CLUSTER: CLUSTER-ID
   DEPLOYMENT: DEPLOYMENT-NAME
   NAMESPACE: NS
@@ -36,7 +34,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: $IMAGE:$TAG
+          tags: viniciusfreitasrj17/pipeline-metadata-actions:staging
           # target: prod
 
   # deploy-to-k8s:
