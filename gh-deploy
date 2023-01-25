@@ -56,6 +56,7 @@ echo "Creating and Push Release Branch"
 sleep 2
 git checkout -b $1
 git push origin $1
+git checkout develop
 
 echo "Delete Feature Branch"
 sleep 2
