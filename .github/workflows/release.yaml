@@ -1,4 +1,7 @@
-name: Deploy Pipeline with Metadata Actions for Releases
+name: Deploy Pipeline with Metadata Actions for Release
+
+env:
+  IMAGE: viniciusfreitasrj17/pipeline-metadata-actions
 
 on:
   push:
@@ -22,7 +25,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           # images: ghcr.io/thedatabaseme/hello-world
-          images: viniciusfreitasrj17/pipeline-metadata-actions
+          images: $IMAGE
           flavor: latest=false
           tags: |
             type=ref,event=branch
