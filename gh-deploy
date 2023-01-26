@@ -48,7 +48,6 @@ function _release() {
     sleep 2
     git checkout -b $release_version
     git push origin $release_version
-    git checkout develop
 
     echo -e "\n${cyan}#---> Delete Feature Branch <---#${close_color}"
     sleep 2
@@ -64,10 +63,11 @@ function _release() {
     gh pr create --head $release_version --base develop --title "$release_description" --body "$description_pr"
     gh pr merge --merge
 
-    echo -e "\n${cyan}#---> Create PR to Master <---#${close_color}"
+    echo -e "\n${cyan}#---> Create PR to Master and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $release_version --base $prd_branch --title "$release_description" --body "$description_pr"
     gh pr merge --merge --delete-branch
+    git checkout develop
 
     sleep 1
     echo -e "\n$ok ${cyan}FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED${close_color}"
