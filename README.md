@@ -1,3 +1,5 @@
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) ![Build status](https://img.shields.io/github/actions/workflow/status/viniciusfreitasrj17/cicd-github-actions/production.yaml?event=push) ![Repo size](https://img.shields.io/github/repo-size/viniciusfreitasrj17/cicd-github-actions) ![Release](https://img.shields.io/github/v/release/viniciusfreitasrj17/cicd-github-actions?display_name=tag)
+
 # CI/CD Github Actions with Git Flow (gh-deploy)
 
 ## Whait is it?
@@ -9,9 +11,9 @@
 
 ## First branchs
 
-- Staging
-- Main
-- Develop
+- main/master
+- develop
+- staging/homolog/preview
 
 ## To Install gh-deploy
 
@@ -38,11 +40,43 @@
 - OPTIONS:
   - -h, --help This Help
 
-  - -pr, --pull-request <title_pr> [<description_pr>] Make a PR in homologation environment
+  - -pr, --pull-request <title_pr> [<description_pr>]
+    Make a PR in homologation environment
     - Exmple <title_pr>: 'my title of pr to staging/homolog'
     - Exmple <description_pr>: 'my description ofpr to staging/homolog' (optional)
 
-  - -r, -release <release_version> <release_description> [<description_pr>] Make Release and Deploy to production environment
+  - -r, -release <release_version> <release_description> [<description_pr>]
+    Make Release and Deploy to production environment
     - Exmple <release_version>: '1.0.1'
     - Exmple <release_description>: 'my release description'
     - Exmple <description_pr>: 'my pr to staging/homolog' (optional)
+
+## Diagram
+
+![Alt gh-deploy](diagram.drawio.svg)
+
+## CLI Flow
+
+1. -pr, --pull-request
+
+   - After terminate feature, do commit in branch feat
+   - Run: `gh-deploy -pr "docs: add readme"`
+   - This command will do it:
+       1. It will run validators
+       2. It will push current branch to remote
+       3. It will make pr to staging/homolog and merge it
+2. . -r, --release
+
+   - If homologation environment was correct, just run this command to make release and deploy
+   - Run: `gh-deploy -r 1.0.0 "add readme"`
+   - This command will do it:
+     1. It will run validators
+     2. It will create a new branch called version number, example 1.0.0, and checkout in it
+     3. It will push this new branch (release branch)
+     4. It will delete old branch (feature branch) in local and remote repository
+     5. It will create release and tag with a version number used in command, the release will has this pattern: v1.0.0
+     6. It will make pr to develop and merge it
+     7. It will make pr to master/main and merge it, also it will remove release branch in remote repository
+     8. It will checkout to develop branch in local and pull on it
+  
+***That's All Folks***
