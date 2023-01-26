@@ -1,81 +1,146 @@
 #!/usr/bin/env bash
 
 ##############################################################################################
-## Variables
+## Variables Global
 ok="\033[32;1m[OK]\033[m"
 error="\033[31;1m[Error]\033[m"
 pattern_prd="master|main"
 pattern_hml="staging|homolog|preview"
-prd_branch=$(git branch --remote | grep -E "*(${pattern_prd})$" | cut -d '/' -f 2 | wc -l)
-hml_branch=$(git branch --remote | grep -E "*(${pattern_hml})$" | cut -d '/' -f 2 | wc -l)
 current_branch=$(git branch --show-current)
-re="^[0-9]+\.[0-9]+\.[0-9]+$"
+yellow="\033[33;1m"
+cyan="\033[36;1m"
+close_color="\033[m"
 
 ##############################################################################################
-## Help
-function _help() {
-  echo \
-    "SYNOPSIS
-	gh-deploy RELEASE_VERSION RELEASE_DESCRIPTION [RELEASE_BODY_DESCRIPTION_PR | OPTIONS]
-
-OPTIONS:
-	-h, --help
-		This Help"
-exit 0
-}
-
-case $1 in
-	-h|--help) _help "$@" ;;
-esac
-
-##############################################################################################
-## Validators
-[[ $(type -P git) ]] || { echo -e "$error No have git instaled\n Run to install: '\033[32;1msudo apt install git -y\033[m'"; exit 1 ;}
-[[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '\033[32;1msudo apt install gh -y\033[m'"; exit 1 ;}
-[[ "$1" ]] || { echo -e "$error Type the release version"; exit 1 ;}
-for i in "master" "main" "staging" "homolog" "develop"; do
+## Validators Global
+[[ $(type -P git) ]] || { echo -e "$error No have git instaled\nRun to install: '${yellow}sudo apt install git -y${close_color}'"; exit 1 ;}
+[[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '${yellow}sudo apt install gh -y${close_color}'"; exit 1 ;}
+for i in "master" "main" "staging" "homolog" "preview" "develop"; do
 	[[ $current_branch = $i ]] && { echo -e "$error Branch current $current_branch not permission to create Release"; exit 1 ;}
 done
-[[ "$1" =~ $re ]] || { echo -e "$error The release branch name should be in pattern 1.0.0"; exit 1 ;}
-for i in $(gh release list --exclude-drafts --exclude-pre-releases -L 100 | awk '{print $1}' | sed s/v//g); do 
-	[[ $i = $1 ]] && { echo -e "$error This release version already exists"; exit 1 ;}
-done
-[[ "$2" ]] || { echo -e "$error Type the release description"; exit 1 ;}
-[[ "$prd_branch" = 1 ]] || { echo -e "$error I not know what's production branch, set in pattern_prd variable"; exit 1 ;}
-[[ "$hml_branch" = 1 ]] || { echo -e "$error I not know what's homologation branch, set in pattern_hml variable"; exit 1 ;}
 ## Debug Validators 
 # echo -e "$ok pass validators ..."
 # exit 0
 
 ##############################################################################################
+## Release
+function _release() {
+    ## Variables
+    prd_branch=$(git branch --remote | grep -E "*(${pattern_prd})$" | cut -d '/' -f 2 | wc -l)
+    re="^[0-9]+\.[0-9]+\.[0-9]+$"
+    release_version=$1
+    release_description=$2
+    description_pr=$3
+
+    ## Validators
+    [[ "$prd_branch" = 1 ]] || { echo -e "$error I not know what's production branch, set in pattern_prd variable"; exit 1 ;}
+    [[ "$release_version" ]] || { echo -e "$error Type the release version"; exit 1 ;}
+    [[ "$release_version" =~ $re ]] || { echo -e "$error The release branch name should be in pattern 1.0.0"; exit 1 ;}
+    for i in $(gh release list --exclude-drafts --exclude-pre-releases -L 100 | awk '{print $1}' | sed s/v//g); do 
+        [[ $i = $release_version ]] && { echo -e "$error This release version already exists"; exit 1 ;}
+    done
+    [[ "$release_description" ]] || { echo -e "$error Type the release description"; exit 1 ;}
+
+    ## Core
+    prd_branch=$(git branch --remote | grep -E "*(master|main)$" | cut -d '/' -f 2 | sed "s/ //g")
+
+    echo -e "\n${cyan}#---> Creating and Push Release Branch <---#${close_color}"
+    sleep 2
+    git checkout -b $release_version
+    git push origin $release_version
+
+    echo -e "\n${cyan}#---> Delete Feature Branch <---#${close_color}"
+    sleep 2
+    git branch -D $current_branch
+    git push origin --delete $current_branch
+
+    echo -e "\n${cyan}#---> Create Release <---#${close_color}"
+    sleep 2
+    gh release create "v$release_version" --notes "$release_description" --target $release_version --title "v$release_version"
+
+    echo -e "\n${cyan}#---> Create PR to Develop and merge it <---#${close_color}"
+    sleep 2
+    gh pr create --head $release_version --base develop --title "$release_description" --body "$description_pr"
+    gh pr merge --merge
+
+    echo -e "\n${cyan}#---> Create PR to Master and merge it <---#${close_color}"
+    sleep 2
+    gh pr create --head $release_version --base $prd_branch --title "$release_description" --body "$description_pr"
+    gh pr merge --merge --delete-branch
+    git checkout develop
+
+    sleep 1
+    echo -e "\n$ok ${cyan}FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED${close_color}"
+}
+
+##############################################################################################
+## Pull Request
+function _pull_request() {
+    ## Variables
+    hml_branch=$(git branch --remote | grep -E "*(${pattern_hml})$" | cut -d '/' -f 2 | wc -l)
+    title_pr=$1
+    description_pr=$2
+
+    ## Validators
+    [[ "$hml_branch" = 1 ]] || { echo -e "$error I not know what's homologation branch, set in pattern_hml variable"; exit 1 ;}
+
+    ## Core
+    hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
+
+    echo -e "\n${cyan}#---> Push Current Branch <---#${close_color}"
+    sleep 2
+    git push origin $current_branch
+
+    echo -e "\n${cyan}#---> Create PR to Homolog and merge it <---#${close_color}"
+    sleep 2
+    gh pr create --head $current_branch --base $hml_branch --title "$title_pr" --body "$description_pr"
+    gh pr merge --merge
+
+    sleep 1
+    echo -e "\n$ok ${cyan}FINISH DEPLOY TO HOMOLOG${close_color}"
+}
+
+##############################################################################################
+## Help
+function _help() {
+  echo \
+    "NAME
+    gh-deploy - Github CLI to make pull request to staging/homolog, make releases and deploy to develop/master
+
+SYNOPSIS
+	gh-deploy OPTIONS
+
+OPTIONS:
+    -h, --help
+
+        This Help
+
+
+    -pr, --pull-request <title_pr> [<description_pr>]
+
+        Make a PR in homologation environment
+
+            Exmple <title_pr>: 'my title of pr to staging/homolog'
+            Exmple <description_pr>: 'my description ofpr to staging/homolog' (optional)
+
+
+    -r, -release <release_version> <release_description> [<description_pr>]
+
+        Make Release and Deploy to production environment
+
+            Exmple <release_version>: '1.0.1'
+            Exmple <release_description>: 'my release description'
+            Exmple <description_pr>: 'my pr to staging/homolog' (optional)"
+    exit 0
+}
+
+##############################################################################################
 ## Core
-prd_branch=$(git branch --remote | grep -E "*(master|main)$" | cut -d '/' -f 2 | sed "s/ //g")
-hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
+case $1 in
+	-h|--help)          shift; _help "$@" ;;
+	-r|--release)       shift; _release "$@" ;;
+	-pr|--pull-request) shift; _pull_request "$@" ;;
+    *)                  shift; echo "Invalid option, use option -h, --help to show help."
+esac
 
-echo "Creating and Push Release Branch"
-sleep 2
-git checkout -b $1
-git push origin $1
-
-echo "Delete Feature Branch"
-sleep 2
-git branch -D $current_branch
-git push origin --delete $current_branch
-
-echo "Create Release"
-sleep 2
-gh release create "v$1" --notes "$2" --target $1 --title "v$1"
-
-echo "Create PR to Develop and merge it"
-sleep 2
-gh pr create --head $1 --base develop --title "$2" --body "$3"
-gh pr merge --merge
-
-echo "Create PR to Master"
-sleep 2
-gh pr create --head $1 --base $prd_branch --title "$2" --body "$3"
-gh pr merge --merge --delete-branch
-
-sleep 1
-echo -e "$ok FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED"
-
+##############################################################################################
