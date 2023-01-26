@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+ok="\033[32;1m[OK]\033[m"
+error="\033[31;1m[Error]\033[m"
+cyan="\033[36;1m"
+close_color="\033[m"
+
+if ! [[ "$UID" -eq "0" ]]; then
+  { echo -e "$error Permission denied, are you root?"; exit 1 ;}
+fi
+
+curl -L "https://github.com/viniciusfreitasrj17/cicd-github-actions/releases/download/v1.3.1/gh-deploy" -o /usr/local/bin/gh-deploy
+chmod +x /usr/local/bin/gh-deploy
+ln -s /usr/local/bin/gh-deploy /usr/bin/gh-deploy
+
+echo -e "\n$ok ${cyan}gh-deploy installed, run: gh-deploy --help${close_color}"
+exit 0
