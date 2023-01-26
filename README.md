@@ -1,3 +1,5 @@
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com) ![Build status](https://img.shields.io/github/actions/workflow/status/viniciusfreitasrj17/cicd-github-actions/production.yaml?event=push) ![Repo size](https://img.shields.io/github/repo-size/viniciusfreitasrj17/cicd-github-actions) ![Release](https://img.shields.io/github/v/release/viniciusfreitasrj17/cicd-github-actions?display_name=tag)
+
 # CI/CD Github Actions with Git Flow (gh-deploy)
 
 ## Whait is it?
