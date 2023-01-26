@@ -67,7 +67,7 @@ function _release() {
     gh pr merge --merge --delete-branch
 
     sleep 1
-    echo -e "$ok FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED"
+    echo -e "\n$ok FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED"
 }
 
 ##############################################################################################
@@ -94,7 +94,7 @@ function _pull_request() {
     gh pr merge --merge
 
     sleep 1
-    echo -e "$ok FINISH DEPLOY TO HOMOLOG"
+    echo -e "\n$ok FINISH DEPLOY TO HOMOLOG"
 }
 
 ##############################################################################################
