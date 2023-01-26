@@ -83,10 +83,16 @@ function _pull_request() {
 
     ## Core
     hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
+    
+    echo "#---> Push Current Branch <---#"
+    sleep 2
+    git push origin $current_branch
+
     echo "#---> Create PR to Homolog and merge it <---#"
     sleep 2
     gh pr create --head $current_branch --base $hml_branch --title "$title_pr" --body "$description_pr"
     gh pr merge --merge
+
     sleep 1
     echo -e "$ok FINISH DEPLOY TO HOMOLOG"
 }
