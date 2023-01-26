@@ -7,11 +7,14 @@ error="\033[31;1m[Error]\033[m"
 pattern_prd="master|main"
 pattern_hml="staging|homolog|preview"
 current_branch=$(git branch --show-current)
+yellow="\033[33;1m"
+cyan="\033[36;1m"
+close_color="\033[m"
 
 ##############################################################################################
 ## Validators Global
-[[ $(type -P git) ]] || { echo -e "$error No have git instaled\n Run to install: '\033[32;1msudo apt install git -y\033[m'"; exit 1 ;}
-[[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '\033[32;1msudo apt install gh -y\033[m'"; exit 1 ;}
+[[ $(type -P git) ]] || { echo -e "$error No have git instaled\nRun to install: '${yellow}sudo apt install git -y${close_color}'"; exit 1 ;}
+[[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '${yellow}sudo apt install gh -y${close_color}'"; exit 1 ;}
 for i in "master" "main" "staging" "homolog" "preview" "develop"; do
 	[[ $current_branch = $i ]] && { echo -e "$error Branch current $current_branch not permission to create Release"; exit 1 ;}
 done
@@ -41,27 +44,27 @@ function _release() {
     ## Core
     prd_branch=$(git branch --remote | grep -E "*(master|main)$" | cut -d '/' -f 2 | sed "s/ //g")
 
-    echo -e "\n\033[36;1m#---> Creating and Push Release Branch <---#\033[m"
+    echo -e "\n${cyan}#---> Creating and Push Release Branch <---#${close_color}"
     sleep 2
     git checkout -b $release_version
     git push origin $release_version
     git checkout develop
 
-    echo -e "\n\033[36;1m#---> Delete Feature Branch <---#\033[m"
+    echo -e "\n${cyan}#---> Delete Feature Branch <---#${close_color}"
     sleep 2
     git branch -D $current_branch
     git push origin --delete $current_branch
 
-    echo -e "\n\033[36;1m#---> Create Release <---#\033[m"
+    echo -e "\n${cyan}#---> Create Release <---#${close_color}"
     sleep 2
     gh release create "v$release_version" --notes "$release_description" --target $release_version --title "v$release_version"
 
-    echo -e "\n\033[36;1m#---> Create PR to Develop and merge it <---#\033[m"
+    echo -e "\n${cyan}#---> Create PR to Develop and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $release_version --base develop --title "$release_description" --body "$description_pr"
     gh pr merge --merge
 
-    echo -e "\n\033[36;1m#---> Create PR to Master <---#\033[m"
+    echo -e "\n${cyan}#---> Create PR to Master <---#${close_color}"
     sleep 2
     gh pr create --head $release_version --base $prd_branch --title "$release_description" --body "$description_pr"
     gh pr merge --merge --delete-branch
@@ -84,11 +87,11 @@ function _pull_request() {
     ## Core
     hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
 
-    echo -e "\n\033[36;1m#---> Push Current Branch <---#\033[m"
+    echo -e "\n${cyan}#---> Push Current Branch <---#${close_color}"
     sleep 2
     git push origin $current_branch
 
-    echo -e "\n\033[36;1m#---> Create PR to Homolog and merge it <---#\033[m"
+    echo -e "\n${cyan}#---> Create PR to Homolog and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $current_branch --base $hml_branch --title "$title_pr" --body "$description_pr"
     gh pr merge --merge
