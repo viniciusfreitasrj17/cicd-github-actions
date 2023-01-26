@@ -68,6 +68,7 @@ function _release() {
     gh pr create --head $release_version --base $prd_branch --title "$release_description" --body "$description_pr"
     gh pr merge --merge --delete-branch
     git checkout develop
+    git pull origin develop
 
     sleep 1
     echo -e "\n$ok ${cyan}FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED${close_color}"
