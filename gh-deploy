@@ -41,27 +41,27 @@ function _release() {
     ## Core
     prd_branch=$(git branch --remote | grep -E "*(master|main)$" | cut -d '/' -f 2 | sed "s/ //g")
 
-    echo -e "\n#---> Creating and Push Release Branch <---#"
+    echo -e "\n\033[36;1m#---> Creating and Push Release Branch <---#\033[m"
     sleep 2
     git checkout -b $release_version
     git push origin $release_version
     git checkout develop
 
-    echo -e "\n#---> Delete Feature Branch <---#"
+    echo -e "\n\033[36;1m#---> Delete Feature Branch <---#\033[m"
     sleep 2
     git branch -D $current_branch
     git push origin --delete $current_branch
 
-    echo -e "\n#---> Create Release <---#"
+    echo -e "\n\033[36;1m#---> Create Release <---#\033[m"
     sleep 2
     gh release create "v$release_version" --notes "$release_description" --target $release_version --title "v$release_version"
 
-    echo -e "\n#---> Create PR to Develop and merge it <---#"
+    echo -e "\n\033[36;1m#---> Create PR to Develop and merge it <---#\033[m"
     sleep 2
     gh pr create --head $release_version --base develop --title "$release_description" --body "$description_pr"
     gh pr merge --merge
 
-    echo -e "\n#---> Create PR to Master <---#"
+    echo -e "\n\033[36;1m#---> Create PR to Master <---#\033[m"
     sleep 2
     gh pr create --head $release_version --base $prd_branch --title "$release_description" --body "$description_pr"
     gh pr merge --merge --delete-branch
@@ -84,11 +84,11 @@ function _pull_request() {
     ## Core
     hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
 
-    echo -e "\n#---> Push Current Branch <---#"
+    echo -e "\n\033[36;1m#---> Push Current Branch <---#\033[m"
     sleep 2
     git push origin $current_branch
 
-    echo -e "\n#---> Create PR to Homolog and merge it <---#"
+    echo -e "\n\033[36;1m#---> Create PR to Homolog and merge it <---#\033[m"
     sleep 2
     gh pr create --head $current_branch --base $hml_branch --title "$title_pr" --body "$description_pr"
     gh pr merge --merge
