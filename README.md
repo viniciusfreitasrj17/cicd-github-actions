@@ -79,4 +79,4 @@
      7. It will make pr to master/main and merge it, also it will remove release branch in remote repository
      8. It will checkout to develop branch in local and pull on it
   
-***That's All Folks***
+***That's All Folks!***
