@@ -61,11 +61,15 @@ function _release() {
     echo -e "\n${cyan}#---> Create PR to Develop and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $release_version --base develop --title "$release_description" --body "$description_pr"
+    MERGEABLE=$(gh pr view --json mergeable -q '.mergeable=="MERGEABLE"')
+    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error Has conflicts in deploy to develop"; exit 1 ;}
     gh pr merge --merge
 
     echo -e "\n${cyan}#---> Create PR to Master and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $release_version --base $prd_branch --title "$release_description" --body "$description_pr"
+    MERGEABLE=$(gh pr view --json mergeable -q '.mergeable=="MERGEABLE"')
+    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error Has conflicts in deploy to $prd_branch"; exit 1 ;}
     gh pr merge --merge --delete-branch
     git checkout develop
     git pull origin develop
@@ -95,6 +99,8 @@ function _pull_request() {
     echo -e "\n${cyan}#---> Create PR to Homolog and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $current_branch --base $hml_branch --title "$title_pr" --body "$description_pr"
+    MERGEABLE=$(gh pr view --json mergeable -q '.mergeable=="MERGEABLE"')
+    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error Has conflicts in deploy to $hml_branch"; exit 1 ;}
     gh pr merge --merge
 
     sleep 1
