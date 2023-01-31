@@ -9,7 +9,7 @@ if ! [[ "$UID" -eq "0" ]]; then
   { echo -e "$error Permission denied, are you root?"; exit 1 ;}
 fi
 
-curl -L "https://github.com/viniciusfreitasrj17/cicd-github-actions/releases/download/v1.3.1/gh-deploy" -o /usr/local/bin/gh-deploy
+curl -L "https://github.com/viniciusfreitasrj17/cicd-github-actions/releases/download/v1.3.6/gh-deploy" -o /usr/local/bin/gh-deploy
 chmod +x /usr/local/bin/gh-deploy
 ln -s /usr/local/bin/gh-deploy /usr/bin/gh-deploy
 
