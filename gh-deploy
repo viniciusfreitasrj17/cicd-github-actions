@@ -27,6 +27,7 @@ done
 function _release() {
     ## Variables
     prd_branch=$(git branch --remote | grep -E "*(${pattern_prd})$" | cut -d '/' -f 2 | wc -l)
+    hml_branch=$(git branch --remote | grep -E "*(${pattern_hml})$" | cut -d '/' -f 2 | wc -l)
     re="^[0-9]+\.[0-9]+\.[0-9]+$"
     release_version=$1
     release_description=$2
@@ -43,6 +44,14 @@ function _release() {
 
     ## Core
     prd_branch=$(git branch --remote | grep -E "*(master|main)$" | cut -d '/' -f 2 | sed "s/ //g")
+    hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
+
+    echo -e "\n${cyan}#---> Verify if was merged on homolog/staging branch <---#${close_color}"
+    sleep 2
+    baseRefName=$(gh pr view --json baseRefName -q ".baseRefName==\"${hml_branch}\"")
+    [[ "$baseRefName" = "true" ]] || { echo -e "$error First do you must merge in homolog/staging branch"; exit 1 ;}
+    MERGED=$(gh pr view --json state -q '.state=="MERGED"')
+    [[ "$MERGED" = "true" ]] || { echo -e "$error First do you must merge in homolog/staging branch"; exit 1 ;}
 
     echo -e "\n${cyan}#---> Creating and Push Release Branch <---#${close_color}"
     sleep 2
