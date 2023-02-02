@@ -86,6 +86,7 @@ function _release() {
     git pull origin develop
 
     sleep 1
+    [[ "$?" -eq "0" ]] || { echo -e "\n$error Some error happen"; exit 1 ;}
     echo -e "\n$ok ${cyan}FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED${close_color}"
 }
 
@@ -116,6 +117,7 @@ function _pull_request() {
     gh pr merge --merge
 
     sleep 1
+    [[ "$?" -eq "0" ]] || { echo -e "\n$error Some error happen"; exit 1 ;}
     echo -e "\n$ok ${cyan}FINISH DEPLOY TO HOMOLOG${close_color}"
 }
 
@@ -159,7 +161,8 @@ case $1 in
 	-h|--help)          shift; _help "$@" ;;
 	-r|--release)       shift; _release "$@" ;;
 	-pr|--pull-request) shift; _pull_request "$@" ;;
-    *)                  shift; echo "Invalid option, use option -h, --help to show help."
+  -v|--version)       shift; echo "gh-deploy v1.3.7" ;;
+    *)                shift; echo "Invalid option, use option -h, --help to show help."
 esac
 
 ##############################################################################################
