@@ -6,7 +6,6 @@ ok="\033[32;1m[OK]\033[m"
 error="\033[31;1m[Error]\033[m"
 pattern_prd="master|main"
 pattern_hml="staging|homolog|preview"
-current_branch=$(git branch --show-current)
 yellow="\033[33;1m"
 cyan="\033[36;1m"
 close_color="\033[m"
@@ -21,6 +20,16 @@ done
 ## Debug Validators 
 # echo -e "$ok pass validators ..."
 # exit 0
+function _get_current_branch() {
+  local current_branch=$(git branch --show-current)
+
+  for i in "master" "main" "staging" "homolog" "preview" "develop"; do
+    [[ $current_branch = $i ]] && { echo -e "$error Branch current $current_branch not permission to create Release"; exit 1 ;}
+  done
+
+  echo $current_branch
+  exit 0
+}
 
 ##############################################################################################
 ## Release
@@ -32,6 +41,7 @@ function _release() {
     release_version=$1
     release_description=$2
     description_pr=$3
+    current_branch=$(_get_current_branch) || { echo -e $current_branch; exit 1 ;} # trycatch
 
     ## Validators
     [[ "$prd_branch" = 1 ]] || { echo -e "$error I not know what's production branch, set in pattern_prd variable"; exit 1 ;}
@@ -97,6 +107,7 @@ function _pull_request() {
     hml_branch=$(git branch --remote | grep -E "*(${pattern_hml})$" | cut -d '/' -f 2 | wc -l)
     title_pr=$1
     description_pr=$2
+    current_branch=$(_get_current_branch) || { echo -e $current_branch; exit 1 ;} # trycatch
 
     ## Validators
     [[ "$hml_branch" = 1 ]] || { echo -e "$error I not know what's homologation branch, set in pattern_hml variable"; exit 1 ;}
@@ -161,7 +172,7 @@ case $1 in
 	-h|--help)          shift; _help "$@" ;;
 	-r|--release)       shift; _release "$@" ;;
 	-pr|--pull-request) shift; _pull_request "$@" ;;
-  -v|--version)       shift; echo "gh-deploy v1.3.7" ;;
+  -v|--version)       shift; echo "gh-deploy v1.3.8" ;;
     *)                shift; echo "Invalid option, use option -h, --help to show help."
 esac
 
