@@ -14,9 +14,7 @@ close_color="\033[m"
 ## Validators Global
 [[ $(type -P git) ]] || { echo -e "$error No have git instaled\nRun to install: '${yellow}sudo apt install git -y${close_color}'"; exit 1 ;}
 [[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '${yellow}sudo apt install gh -y${close_color}'"; exit 1 ;}
-for i in "master" "main" "staging" "homolog" "preview" "develop"; do
-	[[ $current_branch = $i ]] && { echo -e "$error Branch current $current_branch not permission to create Release"; exit 1 ;}
-done
+
 ## Debug Validators 
 # echo -e "$ok pass validators ..."
 # exit 0
