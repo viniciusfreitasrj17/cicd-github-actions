@@ -4,8 +4,8 @@
 ## Variables Global
 ok="\033[32;1m[OK]\033[m"
 error="\033[31;1m[Error]\033[m"
-pattern_prd="master|main"
-pattern_hml="staging|homolog|preview"
+pattern_prd="origin/main|origin/master"
+pattern_hml="origin/staging|origin/homolog|origin/preview"
 yellow="\033[33;1m"
 cyan="\033[36;1m"
 close_color="\033[m"
@@ -33,8 +33,8 @@ function _get_current_branch() {
 ## Release
 function _release() {
     ## Variables
-    prd_branch=$(git branch --remote | grep -E "*(${pattern_prd})$" | cut -d '/' -f 2 | wc -l)
-    hml_branch=$(git branch --remote | grep -E "*(${pattern_hml})$" | cut -d '/' -f 2 | wc -l)
+    prd_branch=$(git branch --remote | grep -E "^.\s+(${pattern_prd})$" | cut -d '/' -f 2 | wc -l)
+    hml_branch=$(git branch --remote | grep -E "^.\s+(${pattern_hml})$" | cut -d '/' -f 2 | wc -l)
     re="^[0-9]+\.[0-9]+\.[0-9]+$"
     release_version=$1
     release_description=$2
@@ -51,8 +51,8 @@ function _release() {
     [[ "$release_description" ]] || { echo -e "$error Type the release description"; exit 1 ;}
 
     ## Core
-    prd_branch=$(git branch --remote | grep -E "*(master|main)$" | cut -d '/' -f 2 | sed "s/ //g")
-    hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
+    prd_branch=$(git branch --remote | grep -E "^.\s+(${pattern_prd})$" | cut -d '/' -f 2 | sed "s/ //g")
+    hml_branch=$(git branch --remote | grep -E "^.\s+(${pattern_hml})$" | cut -d '/' -f 2 | sed "s/ //g")
 
     echo -e "\n${cyan}#---> Verify if was merged on homolog/staging branch <---#${close_color}"
     sleep 2
@@ -170,7 +170,7 @@ case $1 in
 	-h|--help)          shift; _help "$@" ;;
 	-r|--release)       shift; _release "$@" ;;
 	-pr|--pull-request) shift; _pull_request "$@" ;;
-  -v|--version)       shift; echo "gh-deploy v1.3.8" ;;
+  -v|--version)       shift; echo "gh-deploy v1.3.10" ;;
     *)                shift; echo "Invalid option, use option -h, --help to show help."
 esac
 
