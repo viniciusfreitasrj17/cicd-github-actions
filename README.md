@@ -78,5 +78,10 @@
      6. It will make pr to develop and merge it
      7. It will make pr to master/main and merge it, also it will remove release branch in remote repository
      8. It will checkout to develop branch in local and pull on it
+
+### Pending
+
+- [ ] Notification if has a new version
+- [ ] Create treat to hotfix branch
   
 ***That's All Folks!***
