@@ -82,9 +82,9 @@
 
 ### Pending
 
+- [x] Notification if has a new version
 - [ ] Verify has auth in gh
 - [ ] Allow create release with attach file
-- [ ] Notification if has a new version
 - [ ] Create treat to hotfix branch
 - [ ] Publish in apt
   
