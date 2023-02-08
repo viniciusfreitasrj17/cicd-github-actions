@@ -17,7 +17,7 @@ current_version="v1.3.11" # change here
 ## Validators Global
 [[ $(type -P git) ]] || { echo -e "$error No have git instaled\nRun to install: '${yellow}sudo apt install git -y${close_color}'"; exit 1 ;}
 [[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '${yellow}sudo apt install gh -y${close_color}'"; exit 1 ;}
-[[ $latest_version = $current_version ]] || { echo -e "$warn Have a new version\nRun to update: '${yellow}sudo curl -fsSL https://raw.githubusercontent.com/viniciusfreitasrj17/cicd-github-actions/main/installer | bash${close_color}'\n" ;}
+[[ $latest_version = $current_version ]] || { echo -e "$warn Have a new version | current: $cyan$current_version$close_color > latest: $cyan$latest_version$close_color\nRun to update: '${yellow}sudo curl -fsSL https://raw.githubusercontent.com/viniciusfreitasrj17/cicd-github-actions/main/installer | bash${close_color}'\n" ;}
 
 ## Debug Validators 
 # echo -e "$ok pass validators ..."
