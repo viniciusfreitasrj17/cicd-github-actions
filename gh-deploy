@@ -18,15 +18,35 @@ close_color="\033[m"
 ## Debug Validators 
 # echo -e "$ok pass validators ..."
 # exit 0
+
+##############################################################################################
+## Utils
 function _get_current_branch() {
-  local current_branch=$(git branch --show-current)
+    local current_branch=$(git branch --show-current)
 
-  for i in "master" "main" "staging" "homolog" "preview" "develop"; do
-    [[ $current_branch = $i ]] && { echo -e "$error Branch current $current_branch not permission to create Release"; exit 1 ;}
-  done
+    for i in "master" "main" "staging" "homolog" "preview" "develop"; do
+        [[ $current_branch = $i ]] && { echo -e "$error Branch current $current_branch not permission to create Release"; exit 1 ;}
+    done
 
-  echo $current_branch
-  exit 0
+    echo $current_branch
+    exit 0
+}
+
+function _is_mergeable() {
+    local owner="$(git remote -v | grep fetch | cut -d ':' -f 2 | cut -d '/' -f 1)"
+    local repo_name="$(git remote -v | grep fetch | cut -d ':' -f 2 | cut -d '/' -f 2 | cut -d '.' -f 1)"
+    local pr_list=$(gh pr list)
+    local current_branch=$(git branch --show-current)
+    if [[ $(grep "$current_branch" <<< "$pr_list") ]]; then
+        local pr_line=$(grep "$current_branch" <<< "$pr_list")
+        local pr_id=$(awk '{print $1}' <<< "$pr_line")
+        local pr_data=$(gh api -H "Accept: application/vnd.github+json" repos/$owner/$repo_name/pulls/$pr_id)
+        local mergeable_row=$(grep "mergeable" <<< "$pr_data")
+        local mergeable_string=$(echo "$mergeable_row" | awk -F 'mergeable":' '{printf $NF}')
+        local is_mergeable=$(echo "$mergeable_string" | cut -d',' -f 1)
+        echo $is_mergeable
+        exit 0
+    fi
 }
 
 ##############################################################################################
@@ -78,16 +98,16 @@ function _release() {
     echo -e "\n${cyan}#---> Create PR to Develop and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $release_version --base develop --title "$release_description" --body "$description_pr"
-    MERGEABLE=$(gh pr view --json mergeable -q '.mergeable=="MERGEABLE"')
-    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error Has conflicts in deploy to develop"; exit 1 ;}
+    MERGEABLE=$(_is_mergeable)
+    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error No possible make merge to develop"; exit 1 ;}
     echo -e "\n$ok ${cyan}No has conflicts!${close_color}"
     gh pr merge --merge
 
     echo -e "\n${cyan}#---> Create PR to Master and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $release_version --base $prd_branch --title "$release_description" --body "$description_pr"
-    MERGEABLE=$(gh pr view --json mergeable -q '.mergeable=="MERGEABLE"')
-    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error Has conflicts in deploy to $prd_branch"; exit 1 ;}
+    MERGEABLE=$(_is_mergeable)
+    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error No possible make merge to $prd_branch"; exit 1 ;}
     echo -e "\n$ok ${cyan}No has conflicts!${close_color}"
     gh pr merge --merge --delete-branch
     git checkout develop
@@ -109,6 +129,7 @@ function _pull_request() {
 
     ## Validators
     [[ "$hml_branch" = 1 ]] || { echo -e "$error I not know what's homologation branch, set in pattern_hml variable"; exit 1 ;}
+    [[ "$(git remote -v)" = "" ]] && { echo -e "$error Not found remote repository"; exit 1 ;}
 
     ## Core
     hml_branch=$(git branch --remote | grep -E "*(staging|homolog|preview)$" | cut -d '/' -f 2 | sed "s/ //g")
@@ -120,8 +141,8 @@ function _pull_request() {
     echo -e "\n${cyan}#---> Create PR to Homolog and merge it <---#${close_color}"
     sleep 2
     gh pr create --head $current_branch --base $hml_branch --title "$title_pr" --body "$description_pr"
-    MERGEABLE=$(gh pr view --json mergeable -q '.mergeable=="MERGEABLE"')
-    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error Has conflicts in deploy to $hml_branch"; exit 1 ;}
+    MERGEABLE=$(_is_mergeable)
+    [[ "$MERGEABLE" = "true" ]] || { echo -e "$error No possible make merge to $hml_branch"; exit 1 ;}
     echo -e "\n$ok ${cyan}No has conflicts!${close_color}"
     gh pr merge --merge
 
@@ -170,8 +191,8 @@ case $1 in
 	-h|--help)          shift; _help "$@" ;;
 	-r|--release)       shift; _release "$@" ;;
 	-pr|--pull-request) shift; _pull_request "$@" ;;
-  -v|--version)       shift; echo "gh-deploy v1.3.10" ;;
-    *)                shift; echo "Invalid option, use option -h, --help to show help."
+    -v|--version)       shift; echo "gh-deploy "$(echo $(gh api -H "Accept: application/vnd.github+json" repos/viniciusfreitasrj17/cicd-github-actions/releases/latest)|grep 'tag_name'|awk -F 'tag_name\":\"' '{printf $NF}'|cut -d'"' -f1)"" ;;
+    *)                  shift; echo "Invalid option, use option -h, --help to show help."
 esac
 
 ##############################################################################################

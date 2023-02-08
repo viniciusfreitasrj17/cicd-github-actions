@@ -14,6 +14,7 @@
 - main/master
 - develop
 - staging/homolog/preview
+- OBS: This branch must have configuration: "Require a pull request before merging"
 
 ## To Install gh-deploy
 
@@ -81,7 +82,10 @@
 
 ### Pending
 
+- [ ] Verify has auth in gh
+- [ ] Allow create release with attach file
 - [ ] Notification if has a new version
 - [ ] Create treat to hotfix branch
+- [ ] Publish in apt
   
 ***That's All Folks!***
