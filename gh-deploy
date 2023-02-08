@@ -3,17 +3,21 @@
 ##############################################################################################
 ## Variables Global
 ok="\033[32;1m[OK]\033[m"
+warn="\033[33;1m[WARN]\033[m"
 error="\033[31;1m[Error]\033[m"
 pattern_prd="origin/main|origin/master"
 pattern_hml="origin/staging|origin/homolog|origin/preview"
 yellow="\033[33;1m"
 cyan="\033[36;1m"
 close_color="\033[m"
+latest_version="$(echo $(gh api -H "Accept: application/vnd.github+json" repos/viniciusfreitasrj17/cicd-github-actions/releases/latest)|grep 'tag_name'|awk -F 'tag_name\":\"' '{printf $NF}'|cut -d'"' -f1)"
+current_version="v1.3.11" # change here
 
 ##############################################################################################
 ## Validators Global
 [[ $(type -P git) ]] || { echo -e "$error No have git instaled\nRun to install: '${yellow}sudo apt install git -y${close_color}'"; exit 1 ;}
 [[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '${yellow}sudo apt install gh -y${close_color}'"; exit 1 ;}
+[[ $latest_version = $current_version ]] || { echo -e "$warn Have a new version\nRun to update: '${yellow}sudo curl -fsSL https://raw.githubusercontent.com/viniciusfreitasrj17/cicd-github-actions/main/installer | bash${close_color}'\n" ;}
 
 ## Debug Validators 
 # echo -e "$ok pass validators ..."
@@ -191,7 +195,7 @@ case $1 in
 	-h|--help)          shift; _help "$@" ;;
 	-r|--release)       shift; _release "$@" ;;
 	-pr|--pull-request) shift; _pull_request "$@" ;;
-    -v|--version)       shift; echo "gh-deploy "$(echo $(gh api -H "Accept: application/vnd.github+json" repos/viniciusfreitasrj17/cicd-github-actions/releases/latest)|grep 'tag_name'|awk -F 'tag_name\":\"' '{printf $NF}'|cut -d'"' -f1)"" ;;
+    -v|--version)       shift; echo "gh-deploy $current_version" ;;
     *)                  shift; echo "Invalid option, use option -h, --help to show help."
 esac
 
