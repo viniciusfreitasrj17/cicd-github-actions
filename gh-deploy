@@ -100,6 +100,7 @@ function _release() {
     [[ "$?" -eq "0" ]] || { echo -e "\n$error Some error happen"; exit 1 ;}
     echo -e "\n$ok ${cyan}FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED${close_color}"
 
+    sleep 2
     pipeline_id=$(gh run list | grep "$prd_branch" | grep "$release_version" -m 1 | rev | awk '{print $3}' | rev)
     [[ ! $pipeline_id = "" ]] && { gh run watch $pipeline_id ;}
 }
@@ -136,6 +137,7 @@ function _pull_request() {
     [[ "$?" -eq "0" ]] || { echo -e "\n$error Some error happen"; exit 1 ;}
     echo -e "\n$ok ${cyan}FINISH DEPLOY TO HOMOLOG${close_color}"
 
+    sleep 2
     pipeline_id=$(gh run list | grep "$hml_branch" | grep "$current_branch" -m 1 | rev | awk '{print $3}' | rev)
     [[ ! $pipeline_id = "" ]] && { gh run watch $pipeline_id ;}
 }
