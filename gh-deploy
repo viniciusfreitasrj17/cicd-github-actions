@@ -1,27 +1,6 @@
 #!/usr/bin/env bash
-
-##############################################################################################
-## Variables Global
-ok="\033[32;1m[OK]\033[m"
-warn="\033[33;1m[WARN]\033[m"
-error="\033[31;1m[Error]\033[m"
-pattern_prd="origin/main|origin/master"
-pattern_hml="origin/staging|origin/homolog|origin/preview"
-yellow="\033[33;1m"
-cyan="\033[36;1m"
-close_color="\033[m"
-latest_version="$(echo $(gh api -H "Accept: application/vnd.github+json" repos/viniciusfreitasrj17/cicd-github-actions/releases/latest)|grep 'tag_name'|awk -F 'tag_name\":\"' '{printf $NF}'|cut -d'"' -f1)"
-current_version="v1.3.11" # change here
-
-##############################################################################################
-## Validators Global
-[[ $(type -P git) ]] || { echo -e "$error No have git instaled\nRun to install: '${yellow}sudo apt install git -y${close_color}'"; exit 1 ;}
-[[ $(type -P gh) ]] || { echo -e "$error No have gh instaled\nRun to install: '${yellow}sudo apt install gh -y${close_color}'"; exit 1 ;}
-[[ $latest_version = $current_version ]] || { echo -e "$warn Have a new version | current: $cyan$current_version$close_color > latest: $cyan$latest_version$close_color\nRun to update: '${yellow}sudo curl -fsSL https://raw.githubusercontent.com/viniciusfreitasrj17/cicd-github-actions/main/installer | bash${close_color}'\n" ;}
-
-## Debug Validators 
-# echo -e "$ok pass validators ..."
-# exit 0
+source config/constants.conf
+source lib/validators
 
 ##############################################################################################
 ## Utils
@@ -120,6 +99,10 @@ function _release() {
     sleep 1
     [[ "$?" -eq "0" ]] || { echo -e "\n$error Some error happen"; exit 1 ;}
     echo -e "\n$ok ${cyan}FINISH DEPLOY TO MASTER WITH RELEASE PUBLISHED${close_color}"
+
+    sleep 2
+    pipeline_id=$(gh run list | grep "$prd_branch" | grep "$release_version" -m 1 | rev | awk '{print $3}' | rev)
+    [[ ! $pipeline_id = "" ]] && { gh run watch $pipeline_id ;}
 }
 
 ##############################################################################################
@@ -153,6 +136,10 @@ function _pull_request() {
     sleep 1
     [[ "$?" -eq "0" ]] || { echo -e "\n$error Some error happen"; exit 1 ;}
     echo -e "\n$ok ${cyan}FINISH DEPLOY TO HOMOLOG${close_color}"
+
+    sleep 2
+    pipeline_id=$(gh run list | grep "$hml_branch" | grep "$current_branch" -m 1 | rev | awk '{print $3}' | rev)
+    [[ ! $pipeline_id = "" ]] && { gh run watch $pipeline_id ;}
 }
 
 ##############################################################################################
