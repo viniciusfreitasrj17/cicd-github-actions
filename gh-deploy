@@ -11,7 +11,7 @@ yellow="\033[33;1m"
 cyan="\033[36;1m"
 close_color="\033[m"
 latest_version="$(echo $(gh api -H 'Accept: application/vnd.github+json' repos/viniciusfreitasrj17/cicd-github-actions/releases/latest)|grep 'tag_name'|awk -F 'tag_name\":\"' '{printf $NF}'|cut -d'"' -f1)"
-current_version="v1.3.12" # change here
+current_version="v1.3.13" # change here
 
 ##############################################################################################
 ## Validators Global
@@ -37,8 +37,8 @@ function _get_current_branch() {
 }
 
 function _is_mergeable() {
-    local owner="$(git remote -v | grep fetch | cut -d ':' -f 2 | cut -d '/' -f 1)"
-    local repo_name="$(git remote -v | grep fetch | cut -d ':' -f 2 | cut -d '/' -f 2 | cut -d '.' -f 1)"
+    local owner="$(git remote -v | grep fetch | awk '{print $2}' | sed 's/\(git@.*:\)\|\(https\|http\):\/\/\w*\.\w*\///' | cut -d '/' -f 1)"
+    local repo_name="$(git remote -v | grep fetch | rev | cut -d '.' -f 2 | cut -d '/' -f 1 | rev)"
     local pr_list=$(gh pr list)
     local current_branch=$(git branch --show-current)
     if [[ $(grep "$current_branch" <<< "$pr_list") ]]; then
