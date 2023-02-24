@@ -11,7 +11,7 @@ yellow="\033[33;1m"
 cyan="\033[36;1m"
 close_color="\033[m"
 latest_version="$(echo $(gh api -H 'Accept: application/vnd.github+json' repos/viniciusfreitasrj17/cicd-github-actions/releases/latest)|grep 'tag_name'|awk -F 'tag_name\":\"' '{printf $NF}'|cut -d'"' -f1)"
-current_version="v1.3.13" # change here
+current_version="v1.3.14" # change here
 
 ##############################################################################################
 ## Validators Global
@@ -123,7 +123,7 @@ function _release() {
 
     sleep 2
     pipeline_id=$(gh run list | grep "$prd_branch" | grep "$release_version" -m 1 | rev | awk '{print $3}' | rev)
-    [[ ! $pipeline_id = "" ]] && { gh run watch $pipeline_id ;}
+    [[ ! $pipeline_id = "" ]] && { gh run watch -i 5 $pipeline_id && notify-send "✅ Pipeline is done of $prd_branch branch" ;}
 }
 
 ##############################################################################################
@@ -160,7 +160,7 @@ function _pull_request() {
 
     sleep 2
     pipeline_id=$(gh run list | grep "$hml_branch" | grep "$current_branch" -m 1 | rev | awk '{print $3}' | rev)
-    [[ ! $pipeline_id = "" ]] && { gh run watch $pipeline_id ;}
+    [[ ! $pipeline_id = "" ]] && { gh run watch -i 5 $pipeline_id && notify-send "✅ Pipeline is done of $hml_branch branch" ;}
 }
 
 ##############################################################################################
