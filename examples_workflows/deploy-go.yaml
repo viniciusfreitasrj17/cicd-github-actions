@@ -1,0 +1,56 @@
+name: Deploy Pipeline in Go with Tests
+
+on:
+  push:
+    branches: 
+      - "master"
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    env:
+      HOST: localhost
+      PORT: 5432
+      USER: root
+      PASSWORD: root
+      DBNAME: root
+    strategy:
+      matrix:
+        go_version: ['1.18', '1.17', '>=1.18'] # run in other machiner version go
+        os: ['ubuntu-latest', 'ubuntu-18.04'] # run in other machiner version os
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go_version }}
+
+      - name: Build-DB
+        run: docker-compose build
+
+      - name: Create-DB
+        run: docker-compose up -d
+
+      - name: Test
+        run: go test -v main_test.go
+
+  build:
+    needs: test # depends test jobs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build
+        run: go build -v main.go
+
+      - name: Upload a Build Artifact
+        users: actions/upload-artifact@v3.1.0
+        with:
+          name: builded
+          path: main # file name
+
+  docker:
+    needs: build
+    uses: ./.github/workflows/deploy-docker.yaml
+    secrets: inherit # pass secret to this pipeline
