@@ -11,7 +11,7 @@ yellow="\033[33;1m"
 cyan="\033[36;1m"
 close_color="\033[m"
 latest_version="$(echo $(gh api -H 'Accept: application/vnd.github+json' repos/viniciusfreitasrj17/cicd-github-actions/releases/latest)|grep 'tag_name'|awk -F 'tag_name\":\"' '{printf $NF}'|cut -d'"' -f1)"
-current_version="v1.3.14" # change here
+current_version="v1.3.15" # change here
 
 ##############################################################################################
 ## Validators Global
